@@ -7,19 +7,22 @@ namespace OneClickNuget
 {
     public class NuspecProvider
     {
-        private Manifest ReadNuspectFile(PublishOptions options)
+        public async Task<Manifest> ReadNuspectFile(PackageRetrieveOptions options)
         {
-            try
+            return await Task.Run(() =>
             {
-                using (FileStream fileStream = new FileStream(options.NuspecFilePath, FileMode.Open))
+                try
                 {
+                    using (FileStream fileStream = new FileStream(options.NuspecFilePath, FileMode.Open))
+                    {
                         return Manifest.ReadFrom(fileStream, true);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Could not read nuspec file. {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Could not read nuspec file. {ex.Message}");
+                }
+            });
         }
 
         private void WriteNuspecFile(Manifest nuspec, PublishOptions options)
@@ -32,11 +35,11 @@ namespace OneClickNuget
 
         public async Task UpdateNuspecFile(PublishOptions options)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
-                var nuspec = ReadNuspectFile(options);
+                var nuspec = await ReadNuspectFile(options);
 
-                nuspec.Metadata.ReleaseNotes =
+                nuspec.Metadata.ReleaseNotes = 
                 $"v {options.TargetPackageVersion}{Environment.NewLine}" +
                 $"{options.ReleaseNotes}{Environment.NewLine}{Environment.NewLine}" +
                 nuspec.Metadata.ReleaseNotes;

@@ -15,7 +15,7 @@ namespace OneClickNuget
             await Task.Run(() =>
             {
                 var project = new Project(options.ProjectFilePath);
-                project.SetGlobalProperty("Configuration", "Release");
+                project.SetProperty("Configuration", "Release");
                 var success = project.Build(new FileLogger());
 
                 if (!success)

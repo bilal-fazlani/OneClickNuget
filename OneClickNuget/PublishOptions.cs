@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 
 namespace OneClickNuget
 {
-    public class PublishOptions
+    public class PublishOptions : PackageRetrieveOptions
     {
         public PublishOptions(
             string projectFilePath,
             string targetPackageVersion, 
-            string releaseNotes)
+            string releaseNotes):base(projectFilePath)
         {
-            ProjectFilePath = projectFilePath;
             TargetPackageVersion = targetPackageVersion;
             ReleaseNotes = releaseNotes;
         }
@@ -22,13 +21,5 @@ namespace OneClickNuget
         public string TargetPackageVersion { get; set; }
 
         public string ReleaseNotes { get; set; }
-
-        public string ProjectFilePath { get; set; }
-
-        public string ProjectName => Path.GetFileNameWithoutExtension(ProjectFilePath);
-
-        public string ProjectDirectory => Path.GetDirectoryName(ProjectFilePath);
-
-        public string NuspecFilePath => Path.Combine(ProjectDirectory, ProjectName + ".nuspec");
     }
 }

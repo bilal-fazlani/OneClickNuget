@@ -135,8 +135,9 @@
   <ItemGroup>
     <Compile Include="AssemblyInfoPatcher.cs" />
     <Compile Include="BuildProvider.cs" />
-    <Compile Include="NugetPackagePublisher.cs" />
+    <Compile Include="NugetPackageManager.cs" />
     <Compile Include="NuspecProvider.cs" />
+    <Compile Include="PackageRetrieveOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PublishOptions.cs" />
     <Compile Include="PublishProgress.cs" />

@@ -6,7 +6,14 @@ using NuGet;
 
 namespace OneClickNuget
 {
-    public class NugetPackagePublisher
+    /*
+    todo: pre fill info from local
+    todo: prefill info from server
+    todo: support pre release,
+    todo: run unit tests,
+    todo: publish
+    */
+    public class NugetPackageManager
     {
         private static void ReportProgress(IProgress<PublishProgress> progress, 
             int percent, string message)
@@ -31,6 +38,13 @@ namespace OneClickNuget
             await PrepareBinaries(options, progress, cancellationToken);
 
             await PublishPackage(options, progress, cancellationToken);
+        }
+
+        public async Task<ManifestMetadata> GetPackageInformation(PackageRetrieveOptions options)
+        {
+            var nuspecProvider = new NuspecProvider();
+            var manifest = await nuspecProvider.ReadNuspectFile(options);
+            return manifest.Metadata;
         }
 
         private async Task PrepareBinaries(PublishOptions options,

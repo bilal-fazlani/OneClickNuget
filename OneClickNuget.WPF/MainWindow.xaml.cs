@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Win32;
+using NuGet;
 
 namespace OneClickNuget.WPF
 {
@@ -35,8 +36,9 @@ namespace OneClickNuget.WPF
         };
 
         private CancellationTokenSource _cancellationTokenSource = null;
-
+        readonly NugetPackageManager _publisher = new NugetPackageManager();
         private string _filePath = null;
+        private ManifestMetadata _metadata = null;
 
         public MainWindow()
         {
@@ -49,24 +51,25 @@ namespace OneClickNuget.WPF
             _openFileDialog.ShowDialog();
         }
 
-        private void OpenFileDialogOnFileOk(object sender, 
+        private async void OpenFileDialogOnFileOk(object sender, 
             CancelEventArgs cancelEventArgs)
         {
             _filePath = _openFileDialog.FileName;
-            TextBlockProjectTitle.Text = _openFileDialog.SafeFileName;
+            PackageRetrieveOptions options = new PackageRetrieveOptions(_filePath);
+            _metadata = await _publisher.GetPackageInformation(options);
+            TextBlockProjectTitle.Text = _metadata.Id;
+            VersionTextBox.Text = _metadata.Version;
         }
 
         private async void PublishButton_Click(object sender, RoutedEventArgs e)
         {
-            var publisher = new NugetPackagePublisher();
-
             Progress<PublishProgress> progress = new Progress<PublishProgress>(ShowStatus);
             _cancellationTokenSource = new CancellationTokenSource();
 
             try
             {
                 var publishOptions = new PublishOptions(_filePath, VersionTextBox.Text, ReleaseNotesTextBox.Text);
-                await publisher.Publish(publishOptions, progress, _cancellationTokenSource.Token);
+                await _publisher.Publish(publishOptions, progress, _cancellationTokenSource.Token);
             }
             catch (Exception ex)
             {
