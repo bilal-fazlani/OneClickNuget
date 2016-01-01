@@ -1,23 +1,17 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using NuGet;
 
 namespace OneClickNuget
 {
     public class NuspecProvider
     {
-        private readonly string _nuspecFilePath;
-
-        public NuspecProvider(string nuspecFilePath)
-        {
-            _nuspecFilePath = nuspecFilePath;
-        }
-
-        public Manifest ReadNuspectFile()
+        private Manifest ReadNuspectFile(PublishOptions options)
         {
             try
             {
-                using (FileStream fileStream = new FileStream(_nuspecFilePath, FileMode.Open))
+                using (FileStream fileStream = new FileStream(options.NuspecFilePath, FileMode.Open))
                 {
                         return Manifest.ReadFrom(fileStream, true);
                 }
@@ -28,34 +22,54 @@ namespace OneClickNuget
             }
         }
 
-        public void WriteNuspecFile(Manifest nuspec)
+        private void WriteNuspecFile(Manifest nuspec, PublishOptions options)
         {
-            using (var filestream = new FileStream(_nuspecFilePath, FileMode.Create))
+            using (var filestream = new FileStream(options.NuspecFilePath, FileMode.Create))
             {
                 nuspec.Save(filestream, true);
             }
         }
 
-        public void Pack(string projectDirectory, string projectName)
+        public async Task UpdateNuspecFile(PublishOptions options)
         {
-            using (FileStream fileStream = new FileStream(_nuspecFilePath, FileMode.Open))
+            await Task.Run(() =>
             {
-                var nuspec = Manifest.ReadFrom(fileStream, true);
-                var pacakgeBuilder = new PackageBuilder();
-                pacakgeBuilder.Populate(nuspec.Metadata);
+                var nuspec = ReadNuspectFile(options);
 
-                pacakgeBuilder.PopulateFiles(projectDirectory, nuspec.Files);
+                nuspec.Metadata.ReleaseNotes =
+                $"v {options.TargetPackageVersion}{Environment.NewLine}" +
+                $"{options.ReleaseNotes}{Environment.NewLine}{Environment.NewLine}" +
+                nuspec.Metadata.ReleaseNotes;
 
-                string nupkgPath = Path.Combine(projectDirectory, $"{projectName} {nuspec.Metadata.Version}.nupkg");
-                FileStream nupkgStream = new FileStream(nupkgPath, FileMode.Create);
+                nuspec.Metadata.Version = options.TargetPackageVersion;
 
-                pacakgeBuilder.Save(nupkgStream);
-            }
+                WriteNuspecFile(nuspec, options);
+            });
         }
 
-        public void Publish()
+        public async Task Pack(PublishOptions options)
         {
-            throw new NotImplementedException();
+            await Task.Run(() =>
+            {
+                using (FileStream fileStream = new FileStream(options.NuspecFilePath, FileMode.Open))
+                {
+                    var nuspec = Manifest.ReadFrom(fileStream, true);
+                    var pacakgeBuilder = new PackageBuilder();
+                    pacakgeBuilder.Populate(nuspec.Metadata);
+
+                    pacakgeBuilder.PopulateFiles(options.ProjectDirectory, nuspec.Files);
+
+                    string nupkgPath = Path.Combine(options.ProjectDirectory, $"{options.ProjectName} {nuspec.Metadata.Version}.nupkg");
+                    FileStream nupkgStream = new FileStream(nupkgPath, FileMode.Create);
+
+                    pacakgeBuilder.Save(nupkgStream);
+                }
+            });
+        }
+
+        public async Task Publish()
+        {
+            await Task.Delay(new TimeSpan(0, 0, 3));
         }
     }
 }

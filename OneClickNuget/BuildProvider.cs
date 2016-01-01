@@ -10,18 +10,11 @@ namespace OneClickNuget
 {
     public class BuildProvider
     {
-        private readonly string _csprojPath;
-
-        public BuildProvider(string csprojPath)
-        {
-            _csprojPath = csprojPath;
-        }
-
-        public async Task Build()
+        public async Task Build(PublishOptions options)
         {
             await Task.Run(() =>
             {
-                var project = new Project(_csprojPath);
+                var project = new Project(options.ProjectFilePath);
                 project.SetGlobalProperty("Configuration", "Release");
                 var success = project.Build(new FileLogger());
 
@@ -32,9 +25,9 @@ namespace OneClickNuget
             });
         }
 
-        public void RunUnitTests()
+        public async Task RunUnitTests()
         {
-            throw new NotImplementedException();
+            await Task.Delay(new TimeSpan(0, 0, 3));
         }
     }
 }

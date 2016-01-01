@@ -1,44 +1,41 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace OneClickNuget
 {
     public class AssemblyInfoPatcher
     {
-        private readonly string _projectDirectory;
-
-        public AssemblyInfoPatcher(string projectDirectory)
+        public async Task PatchVersion(PublishOptions options)
         {
-            _projectDirectory = projectDirectory;
-        }
-
-        public void PatchVersion(string version)
-        {
-            string assemblyInfoFileName = Path.Combine(_projectDirectory, "Properties", "AssemblyInfo.cs");
-            var allLines = File.ReadAllLines(assemblyInfoFileName);
-
-            int index = 0;
-            int assemblyVersionIndex = 0;
-            int assemblyFileVersionIndex = 0;
-
-            foreach (var line in allLines)
+            await Task.Run(() =>
             {
-                if (line.StartsWith("[assembly: AssemblyVersion("))
+                string assemblyInfoFileName = Path.Combine(options.ProjectDirectory, "Properties", "AssemblyInfo.cs");
+                var allLines = File.ReadAllLines(assemblyInfoFileName);
+
+                int index = 0;
+                int assemblyVersionIndex = 0;
+                int assemblyFileVersionIndex = 0;
+
+                foreach (var line in allLines)
                 {
-                    assemblyVersionIndex = index;
+                    if (line.StartsWith("[assembly: AssemblyVersion("))
+                    {
+                        assemblyVersionIndex = index;
+                    }
+
+                    if (line.StartsWith("[assembly: AssemblyFileVersion("))
+                    {
+                        assemblyFileVersionIndex = index;
+                    }
+
+                    index++;
                 }
 
-                if (line.StartsWith("[assembly: AssemblyFileVersion("))
-                {
-                    assemblyFileVersionIndex = index;
-                }
+                allLines[assemblyVersionIndex] = $"[assembly: AssemblyVersion(\"{options.TargetPackageVersion}\")]";
+                allLines[assemblyFileVersionIndex] = $"[assembly: AssemblyFileVersion(\"{options.TargetPackageVersion}\")]";
 
-                index++;
-            }
-
-            allLines[assemblyVersionIndex] = $"[assembly: AssemblyVersion(\"{version}\")]";
-            allLines[assemblyFileVersionIndex] = $"[assembly: AssemblyFileVersion(\"{version}\")]";
-
-            File.WriteAllLines(assemblyInfoFileName, allLines);
+                File.WriteAllLines(assemblyInfoFileName, allLines);
+            });
         }
     }
 }

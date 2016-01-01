@@ -58,15 +58,15 @@ namespace OneClickNuget.WPF
 
         private async void PublishButton_Click(object sender, RoutedEventArgs e)
         {
-            var publisher = new NugetPackagePublisher(_filePath);
+            var publisher = new NugetPackagePublisher();
 
             Progress<PublishProgress> progress = new Progress<PublishProgress>(ShowStatus);
             _cancellationTokenSource = new CancellationTokenSource();
 
             try
             {
-                await publisher.Publish(VersionTextBox.Text, ReleaseNotesTextBox.Text,
-                    progress, _cancellationTokenSource.Token);
+                var publishOptions = new PublishOptions(_filePath, VersionTextBox.Text, ReleaseNotesTextBox.Text);
+                await publisher.Publish(publishOptions, progress, _cancellationTokenSource.Token);
             }
             catch (Exception ex)
             {
