@@ -34,6 +34,8 @@ namespace OneClickNuget.WPF
             Filter = "C# project file (*.csproj) | *.csproj"
         };
 
+        private CancellationTokenSource _cancellationTokenSource = null;
+
         private string _filePath = null;
 
         public MainWindow()
@@ -59,24 +61,30 @@ namespace OneClickNuget.WPF
             var publisher = new NugetPackagePublisher(_filePath);
 
             Progress<PublishProgress> progress = new Progress<PublishProgress>(ShowStatus);
+            _cancellationTokenSource = new CancellationTokenSource();
 
             try
             {
                 await publisher.Publish(VersionTextBox.Text, ReleaseNotesTextBox.Text,
-                    progress, CancellationToken.None);
+                    progress, _cancellationTokenSource.Token);
             }
             catch (Exception ex)
             {
-                //StatusTextBox.Text = $"published failed : {ex.Message}";
-                MessageBox.Show($"published failed : {ex.Message}");
-            }
+                MessageBox.Show(ex.Message, "Publish failed", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
 
-            //MessageBox.Show("package published successfully");
+                StatusTextBox.Text = $"publish failed : {ex.Message}";
+            }
         }
 
         private void ShowStatus(PublishProgress progress)
         {
             StatusTextBox.Text = $"{progress.Percent}% : {progress.Message}";
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            _cancellationTokenSource.Cancel(true);
         }
     }
 }

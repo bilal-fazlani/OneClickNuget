@@ -37,43 +37,36 @@ namespace OneClickNuget
             string projectName = Path.GetFileNameWithoutExtension(_csprojFilePath);
             string projectDirectory = Path.GetDirectoryName(_csprojFilePath);
             string nuspecPath = Path.Combine(projectDirectory, projectName + ".nuspec");
-            int percent = 0;
 
-            ReportProgress(progress, percent, "Publish started");
+            ReportProgress(progress, 0, "Starting up...");
 
             await UpdateNuspecFile(nuspecPath, releaseNotes, targetPackageVersion);
 
-            percent = percent + 10;
-            ReportProgress(progress, percent, "Nuspec updated");
+            ReportProgress(progress, 10, "Nuspec updated");
             cancellationToken.ThrowIfCancellationRequested();
 
             await PatchAssemblyInfo(targetPackageVersion, projectDirectory);
 
-            percent = percent + 10;
-            ReportProgress(progress, percent, "AssemblyInfo patched");
+            ReportProgress(progress, 20, "AssemblyInfo patched");
             cancellationToken.ThrowIfCancellationRequested();
 
             await BuildProject(_csprojFilePath);
-            percent = percent + 30;
-            ReportProgress(progress, percent, "Build complete");
+            ReportProgress(progress, 50, "Build complete");
             cancellationToken.ThrowIfCancellationRequested();
 
             await RunUnitTests(projectDirectory);
 
-            percent = percent + 20;
-            ReportProgress(progress, percent, "Unit tests skipped");
+            ReportProgress(progress, 70, "Unit tests skipped");
             cancellationToken.ThrowIfCancellationRequested();
 
             await CreateNugetPackage(projectDirectory, projectName);
 
-            percent = percent + 20;
-            ReportProgress(progress, percent, "Nuget package created");
+            ReportProgress(progress, 90, "Nuget package created");
             cancellationToken.ThrowIfCancellationRequested();
 
             await PublishNugetPackage(nuspecPath);
 
-            percent = percent + 10;
-            ReportProgress(progress, percent, "Publish task skipped");
+            ReportProgress(progress, 100, "Publish task skipped");
             cancellationToken.ThrowIfCancellationRequested();
         }
 
@@ -88,7 +81,8 @@ namespace OneClickNuget
             {
                 NuspecProvider nuspecProvider = new NuspecProvider(nuspecPath);
                 var nuspec = nuspecProvider.ReadNuspectFile();
-                UpdateNuspec(nuspec, releaseNotes, targetPackageVersion);
+                nuspec.Metadata.ReleaseNotes = releaseNotes + nuspec.Metadata.ReleaseNotes;
+                nuspec.Metadata.Version = targetPackageVersion;
                 nuspecProvider.WriteNuspecFile(nuspec);
             });
         }
@@ -119,15 +113,6 @@ namespace OneClickNuget
                 AssemblyInfoPatcher patcher = new AssemblyInfoPatcher(projectDirectory);
                 patcher.PatchVersion(version);
             });
-        }
-
-        private static void UpdateNuspec(
-            Manifest nuspec, 
-            string releaseNotes,
-            string targetPackageVersion)
-        {
-            nuspec.Metadata.ReleaseNotes = releaseNotes + nuspec.Metadata.ReleaseNotes;
-            nuspec.Metadata.Version = targetPackageVersion;
         }
     }
 }

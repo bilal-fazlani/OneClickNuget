@@ -5,17 +5,29 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OneClickNuget.WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="415.44" Width="525" ResizeMode="NoResize">
-    <Grid>
-        <TextBlock x:Name="TextBlockProjectTitle" HorizontalAlignment="Left" Margin="166,32,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="20" Width="321"><Run /><LineBreak/><Run/></TextBlock>
+        Title="MainWindow" Height="440.773" Width="525"
+        ResizeMode="NoResize">
+    <Grid >
         <Button x:Name="BrowseButton" Content="Browse project" HorizontalAlignment="Left" Margin="40,32,0,0" VerticalAlignment="Top" Width="103" Click="button_Click"/>
+        <TextBlock x:Name="TextBlockProjectTitle" HorizontalAlignment="Left" Margin="166,32,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="20" Width="321"><Run /><LineBreak/><Run/></TextBlock>
+
+        <TextBlock x:Name="VersionLabel" HorizontalAlignment="Left" Margin="40,70,0,0" TextWrapping="Wrap" Text="version" VerticalAlignment="Top"/>
         <TextBox x:Name="VersionTextBox" HorizontalAlignment="Left" Height="23" Margin="40,91,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="447" />
+
+        <TextBlock x:Name="ReleaseNotesLabel" HorizontalAlignment="Left" Margin="40,136,0,0" TextWrapping="Wrap" Text="release notes" VerticalAlignment="Top"/>
         <TextBox x:Name="ReleaseNotesTextBox" HorizontalAlignment="Left" Height="108" Margin="40,157,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="447" AcceptsReturn="True" />
-        <Button x:Name="PublishButton" Content="Publish" HorizontalAlignment="Left" Margin="412,345,0,0" VerticalAlignment="Top" Width="75" Click="PublishButton_Click"/>
-        <TextBlock x:Name="VersionTextBlock" HorizontalAlignment="Left" Margin="40,70,0,0" TextWrapping="Wrap" Text="version" VerticalAlignment="Top"/>
-        <TextBlock x:Name="ReleaseNotesTextBlock" HorizontalAlignment="Left" Margin="40,136,0,0" TextWrapping="Wrap" Text="release notes" VerticalAlignment="Top"/>
-        <TextBox x:Name="ApiKeyTextBox" HorizontalAlignment="Left" Height="23" Margin="40,301,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="447" />
+
         <TextBlock x:Name="ApiKeyLabel" HorizontalAlignment="Left" Margin="40,280,0,0" TextWrapping="Wrap" Text="api key" VerticalAlignment="Top"/>
-        <TextBlock x:Name="StatusTextBox" HorizontalAlignment="Left" Margin="10,360,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+        <TextBox x:Name="ApiKeyTextBox" HorizontalAlignment="Left" Height="23" Margin="40,301,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="447" />
+
+        <Button x:Name="CancelButton" Content="Cancel" HorizontalAlignment="Left" Margin="318,345,0,0" VerticalAlignment="Top" Width="75" Click="CancelButton_Click"/>
+        <Button x:Name="PublishButton" Content="Publish" HorizontalAlignment="Left" Margin="412,345,0,0" VerticalAlignment="Top" Width="75" Click="PublishButton_Click"/>
+
+        <TextBlock x:Name="StatusTextBox" HorizontalAlignment="Left" 
+                   Margin="0,378,0,0" TextWrapping="Wrap" 
+                   Background="#e4e4e4"
+                   VerticalAlignment="Center" 
+                   Padding="16,8"
+                   Width="519" Height="34"/>
     </Grid>
 </Window>

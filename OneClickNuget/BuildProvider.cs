@@ -23,14 +23,15 @@ namespace OneClickNuget
             {
                 var globalProperties = new Dictionary<string, string>();
                 var buildRequest = new BuildRequestData(_csprojPath, globalProperties, null, new[] { "Build" }, null);
-                var pc = new ProjectCollection();
-                var bp = new BuildParameters(pc);
+                var projectColletion = new ProjectCollection();
+
+                var buildParameters = new BuildParameters(projectColletion);
 
                 var loggers = new List<ILogger> { new FileLogger() };
-                bp.Loggers = loggers;
+                buildParameters.Loggers = loggers;
 
                 var result = BuildManager.DefaultBuildManager
-                    .Build(bp, buildRequest);
+                    .Build(buildParameters, buildRequest);
 
                 if (result.OverallResult != BuildResultCode.Success)
                 {

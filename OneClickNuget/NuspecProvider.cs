@@ -15,9 +15,16 @@ namespace OneClickNuget
 
         public Manifest ReadNuspectFile()
         {
-            using (FileStream fileStream = new FileStream(_nuspecFilePath, FileMode.Open))
+            try
             {
-                return Manifest.ReadFrom(fileStream, true);
+                using (FileStream fileStream = new FileStream(_nuspecFilePath, FileMode.Open))
+                {
+                        return Manifest.ReadFrom(fileStream, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Could not read nuspec file. {ex.Message}");
             }
         }
 
