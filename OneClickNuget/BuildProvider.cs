@@ -21,19 +21,11 @@ namespace OneClickNuget
         {
             await Task.Run(() =>
             {
-                var globalProperties = new Dictionary<string, string>();
-                var buildRequest = new BuildRequestData(_csprojPath, globalProperties, null, new[] { "Build" }, null);
-                var projectColletion = new ProjectCollection();
+                var project = new Project(_csprojPath);
+                project.SetGlobalProperty("Configuration", "Release");
+                var success = project.Build(new FileLogger());
 
-                var buildParameters = new BuildParameters(projectColletion);
-
-                var loggers = new List<ILogger> { new FileLogger() };
-                buildParameters.Loggers = loggers;
-
-                var result = BuildManager.DefaultBuildManager
-                    .Build(buildParameters, buildRequest);
-
-                if (result.OverallResult != BuildResultCode.Success)
+                if (!success)
                 {
                     throw new Exception("build failed. see msbuild.log for more details");
                 }

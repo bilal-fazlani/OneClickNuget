@@ -46,7 +46,7 @@ namespace OneClickNuget
 
                 pacakgeBuilder.PopulateFiles(projectDirectory, nuspec.Files);
 
-                string nupkgPath = Path.Combine(projectDirectory, projectName + nuspec.Metadata.Version + ".nupkg");
+                string nupkgPath = Path.Combine(projectDirectory, $"{projectName} {nuspec.Metadata.Version}.nupkg");
                 FileStream nupkgStream = new FileStream(nupkgPath, FileMode.Create);
 
                 pacakgeBuilder.Save(nupkgStream);

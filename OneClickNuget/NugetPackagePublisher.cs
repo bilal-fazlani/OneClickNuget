@@ -75,14 +75,23 @@ namespace OneClickNuget
             await Task.Delay(new TimeSpan(0, 0, 3));
         }
 
-        private static async Task UpdateNuspecFile(string nuspecPath, string releaseNotes, string targetPackageVersion)
+        private static async Task UpdateNuspecFile(
+            string nuspecPath, 
+            string releaseNotes, 
+            string targetPackageVersion)
         {
             await Task.Run(() =>
             {
                 NuspecProvider nuspecProvider = new NuspecProvider(nuspecPath);
                 var nuspec = nuspecProvider.ReadNuspectFile();
-                nuspec.Metadata.ReleaseNotes = releaseNotes + nuspec.Metadata.ReleaseNotes;
+
+                nuspec.Metadata.ReleaseNotes = 
+                $"v {targetPackageVersion}{Environment.NewLine}" +
+                $"{releaseNotes}{Environment.NewLine}{Environment.NewLine}"+ 
+                nuspec.Metadata.ReleaseNotes;
+
                 nuspec.Metadata.Version = targetPackageVersion;
+
                 nuspecProvider.WriteNuspecFile(nuspec);
             });
         }
