@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -53,11 +54,29 @@ namespace OneClickNuget.WPF
             TextBlockProjectTitle.Text = _openFileDialog.SafeFileName;
         }
 
-        private void PublishButton_Click(object sender, RoutedEventArgs e)
+        private async void PublishButton_Click(object sender, RoutedEventArgs e)
         {
             var publisher = new NugetPackagePublisher(_filePath);
-            publisher.Publish(VersionTextBox.Text, ReleaseNotesTextBox.Text);
-            MessageBox.Show("package published successfully");
+
+            Progress<PublishProgress> progress = new Progress<PublishProgress>(ShowStatus);
+
+            try
+            {
+                await publisher.Publish(VersionTextBox.Text, ReleaseNotesTextBox.Text,
+                    progress, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                //StatusTextBox.Text = $"published failed : {ex.Message}";
+                MessageBox.Show($"published failed : {ex.Message}");
+            }
+
+            //MessageBox.Show("package published successfully");
+        }
+
+        private void ShowStatus(PublishProgress progress)
+        {
+            StatusTextBox.Text = $"{progress.Percent}% : {progress.Message}";
         }
     }
 }

@@ -33,7 +33,7 @@ namespace OneClickNuget
             #endregion
 
             var publisher = new NugetPackagePublisher(csprojPath);
-            publisher.Publish(targetPackageVersion, releaseNotes);
+            //publisher.Publish(targetPackageVersion, releaseNotes);
         }
 
         

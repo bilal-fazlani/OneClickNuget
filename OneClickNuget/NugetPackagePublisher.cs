@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet;
 
 namespace OneClickNuget
@@ -13,59 +15,110 @@ namespace OneClickNuget
             _csprojFilePath = csprojFilePath;
         }
 
-        public void Publish(string targetPackageVersion,
-            string releaseNotes)
+        private static void ReportProgress(IProgress<PublishProgress> progress, 
+            int percent, string message)
         {
+            progress.Report(new PublishProgress
+            {
+                Message = message,
+                Percent = percent
+            });
+        }
+
+        public async Task Publish(
+            string targetPackageVersion,
+            string releaseNotes,
+            IProgress<PublishProgress> progress,
+            CancellationToken cancellationToken
+            )
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
             string projectName = Path.GetFileNameWithoutExtension(_csprojFilePath);
             string projectDirectory = Path.GetDirectoryName(_csprojFilePath);
             string nuspecPath = Path.Combine(projectDirectory, projectName + ".nuspec");
+            int percent = 0;
 
-            UpdateNuspecFile(nuspecPath, releaseNotes, targetPackageVersion);
+            ReportProgress(progress, percent, "Publish started");
 
-            PatchAssemblyInfo(targetPackageVersion, projectDirectory);
+            await UpdateNuspecFile(nuspecPath, releaseNotes, targetPackageVersion);
 
-            BuildProject(_csprojFilePath);
+            percent = percent + 10;
+            ReportProgress(progress, percent, "Nuspec updated");
+            cancellationToken.ThrowIfCancellationRequested();
 
-            //RunUnitTests(csprojPath);
+            await PatchAssemblyInfo(targetPackageVersion, projectDirectory);
 
-            CreateNugetPackage(projectDirectory, projectName);
+            percent = percent + 10;
+            ReportProgress(progress, percent, "AssemblyInfo patched");
+            cancellationToken.ThrowIfCancellationRequested();
 
-            //PublishNugetPackage(nuspecPath);
+            await BuildProject(_csprojFilePath);
+            percent = percent + 30;
+            ReportProgress(progress, percent, "Build complete");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await RunUnitTests(projectDirectory);
+
+            percent = percent + 20;
+            ReportProgress(progress, percent, "Unit tests skipped");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await CreateNugetPackage(projectDirectory, projectName);
+
+            percent = percent + 20;
+            ReportProgress(progress, percent, "Nuget package created");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await PublishNugetPackage(nuspecPath);
+
+            percent = percent + 10;
+            ReportProgress(progress, percent, "Publish task skipped");
+            cancellationToken.ThrowIfCancellationRequested();
         }
 
-        private static void PublishNugetPackage(string nuspecPath)
+        private static async Task PublishNugetPackage(string nuspecPath)
         {
-            throw new NotImplementedException();
+            await Task.Delay(new TimeSpan(0, 0, 3));
         }
 
-        private static void UpdateNuspecFile(string nuspecPath, string releaseNotes, string targetPackageVersion)
+        private static async Task UpdateNuspecFile(string nuspecPath, string releaseNotes, string targetPackageVersion)
         {
-            NuspecProvider nuspecProvider = new NuspecProvider(nuspecPath);
-            var nuspec = nuspecProvider.ReadNuspectFile();
-            UpdateNuspec(nuspec, releaseNotes, targetPackageVersion);
-            nuspecProvider.WriteNuspecFile(nuspec);
+            await Task.Run(() =>
+            {
+                NuspecProvider nuspecProvider = new NuspecProvider(nuspecPath);
+                var nuspec = nuspecProvider.ReadNuspectFile();
+                UpdateNuspec(nuspec, releaseNotes, targetPackageVersion);
+                nuspecProvider.WriteNuspecFile(nuspec);
+            });
         }
 
-        private static void CreateNugetPackage(string projectDirectory, string projectName)
+        private static async Task CreateNugetPackage(string projectDirectory, string projectName)
         {
-            string nuspecPath = Path.Combine(projectDirectory, projectName + ".nuspec");
-            new NuspecProvider(nuspecPath).Pack(projectDirectory, projectName);
+            await Task.Run(() =>
+            {
+                string nuspecPath = Path.Combine(projectDirectory, projectName + ".nuspec");
+                new NuspecProvider(nuspecPath).Pack(projectDirectory, projectName);
+            });
         }
 
-        private static void RunUnitTests(string csprojPath)
+        private static async Task RunUnitTests(string projectDiretory)
         {
-            throw new NotImplementedException();
+            await Task.Delay(new TimeSpan(0, 0, 3));
         }
 
-        private static void BuildProject(string csprojPath)
+        private static async Task BuildProject(string csprojPath)
         {
-            new BuildProvider(csprojPath).Build();
+            await new BuildProvider(csprojPath).Build();
         }
 
-        private static void PatchAssemblyInfo(string version, string projectDirectory)
+        private static async Task PatchAssemblyInfo(string version, string projectDirectory)
         {
-            AssemblyInfoPatcher patcher = new AssemblyInfoPatcher(projectDirectory);
-            patcher.PatchVersion(version);
+            await Task.Run(() =>
+            {
+                AssemblyInfoPatcher patcher = new AssemblyInfoPatcher(projectDirectory);
+                patcher.PatchVersion(version);
+            });
         }
 
         private static void UpdateNuspec(

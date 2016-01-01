@@ -21,6 +21,13 @@ namespace OneClickNuget
             }
         }
 
+        //public Manifest DownloadFromInternet(string packageName)
+        //{
+        //    new PackageDownloader().DownloadPackage();
+        //    new PackageBuilder().
+        //    Manifest.Create()
+        //}
+
         public void WriteNuspecFile(Manifest nuspec)
         {
             using (var filestream = new FileStream(_nuspecFilePath, FileMode.Create))
