@@ -57,13 +57,20 @@ namespace OneClickNuget.WPF
         {
             using (new WaitCursor())
             {
-                ShowStatus("Please wait.... downloading package information");
-                _filePath = _openFileDialog.FileName;
-                PackageRetrieveOptions options = new PackageRetrieveOptions(_filePath);
-                _manifest = await _publisher.GetPackageInformation(options);
-                TextBlockProjectTitle.Text = $"{_manifest.Metadata.Id} {_manifest.Metadata.Version}";
-                VersionTextBox.Text = GetNewVersion();
-                ShowStatus("Package Information loaded");
+                try
+                {
+                    ShowStatus("Please wait.... downloading package information");
+                    _filePath = _openFileDialog.FileName;
+                    PackageRetrieveOptions options = new PackageRetrieveOptions(_filePath);
+                    _manifest = await _publisher.GetPackageInformation(options);
+                    TextBlockProjectTitle.Text = $"{_manifest.Metadata.Id} {_manifest.Metadata.Version}";
+                    VersionTextBox.Text = GetNewVersion();
+                    ShowStatus("Package information loaded");
+                }
+                catch (Exception ex)
+                {
+                    ShowStatus("Could not load package information." + ex.Message);
+                }
             }
         }
 
@@ -87,7 +94,12 @@ namespace OneClickNuget.WPF
 
             try
             {
-                var publishOptions = new PublishOptions(_filePath, VersionTextBox.Text, ReleaseNotesTextBox.Text);
+                var publishOptions = new PublishOptions(
+                    _filePath, 
+                    VersionTextBox.Text, 
+                    ReleaseNotesTextBox.Text, 
+                    ApiKeyTextBox.Text);
+
                 await _publisher.Publish(publishOptions, progress, _cancellationTokenSource.Token);
             }
             catch (Exception ex)

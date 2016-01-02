@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using NuGet;
 
 namespace OneClickNuget.Data
@@ -8,7 +9,8 @@ namespace OneClickNuget.Data
         public PublishOptions(
             string projectFilePath,
             string targetPackageVersion,
-            string releaseNotes
+            string releaseNotes,
+            string apiKey
             ) : base(projectFilePath)
         {
             if (string.IsNullOrEmpty(targetPackageVersion))
@@ -24,10 +26,15 @@ namespace OneClickNuget.Data
             }
             
             ReleaseNotes = releaseNotes;
+            ApiKey = apiKey;
         }
 
         public SemanticVersion TargetPackageVersion { get; set; }
 
+        public string PackagePath
+            => Path.Combine(ProjectDirectory, $"{ProjectName} {TargetPackageVersion.ToNormalizedString()}.nupkg");
+
         public string ReleaseNotes { get; set; }
+        public string ApiKey { get; set; }
     }
 }

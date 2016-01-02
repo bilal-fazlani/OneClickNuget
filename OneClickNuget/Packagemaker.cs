@@ -32,9 +32,30 @@ namespace OneClickNuget
             });
         }
 
-        public async Task PublishNugetPackage()
+        public async Task PublishNugetPackage(PublishOptions options)
         {
-            await Task.Delay(new TimeSpan(0, 0, 3));
+            try
+            {
+                await Task.Run(() =>
+                {
+                    IPackageRepository localRepo = PackageRepositoryFactory
+                        .Default.CreateRepository(options.ProjectDirectory);
+
+                    IPackage localPackage = localRepo.FindPackage(options.ProjectName, options.TargetPackageVersion);
+
+                    FileInfo packageFileInfo = new FileInfo(options.PackagePath);
+
+                    PackageServer packageServer = new PackageServer("https://packages.nuget.org/api/v2",
+                        "OneClickNuget");
+
+                    //packageServer.PushPackage(options.ApiKey, localPackage,
+                    //    packageFileInfo.Length, 1800, false);
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Could not publish package. "+ ex.Message);
+            }
         }
 
         private List<ManifestFile> GetManifestFiles(List<ManifestFile> onlineManifestFileEntries,

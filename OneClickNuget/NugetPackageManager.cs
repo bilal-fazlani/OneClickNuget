@@ -78,7 +78,7 @@ namespace OneClickNuget
             ReportProgress(progress, 90, "Nuget package created");
             cancellationToken.ThrowIfCancellationRequested();
 
-            await packageMaker.PublishNugetPackage();
+            await packageMaker.PublishNugetPackage(options);
             ReportProgress(progress, 100, "Publish task skipped");
             cancellationToken.ThrowIfCancellationRequested();
         }
