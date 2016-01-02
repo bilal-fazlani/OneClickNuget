@@ -7,8 +7,9 @@ namespace OneClickNuget
     {
         public PublishOptions(
             string projectFilePath,
-            string targetPackageVersion, 
-            string releaseNotes):base(projectFilePath)
+            string targetPackageVersion,
+            string releaseNotes
+            ) : base(projectFilePath)
         {
             if (string.IsNullOrEmpty(targetPackageVersion))
                 throw new Exception("Please specify a version for nuget package.");

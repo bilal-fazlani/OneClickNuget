@@ -39,8 +39,8 @@ namespace OneClickNuget
         public async Task<Manifest> GetPackageInformation(PackageRetrieveOptions options)
         {
             var nuspecProvider = new NuspecProvider();
-            await nuspecProvider.DownloadLatestNuspec(options);
-            return await nuspecProvider.ReadNuspectFile(options);
+            await nuspecProvider.RefreshNuspecFile(options);
+            return await nuspecProvider.GetNuspecManifest(options);
         }
 
         private async Task PrepareBinaries(PublishOptions options,
@@ -68,16 +68,16 @@ namespace OneClickNuget
             CancellationToken cancellationToken)
         {
             NuspecProvider nuspecProvider = new NuspecProvider();
-
-            await nuspecProvider.UpdateNuspecFile(options);
+            await nuspecProvider.PatchNuspecFile(options);
             ReportProgress(progress, 10, "Nuspec updated");
             cancellationToken.ThrowIfCancellationRequested();
 
-            await nuspecProvider.Pack(options);
+            NupkgBuilder nupkgBuilder = new NupkgBuilder();
+            await nupkgBuilder.CreateNugetPackage(options);
             ReportProgress(progress, 90, "Nuget package created");
             cancellationToken.ThrowIfCancellationRequested();
 
-            await nuspecProvider.Publish();
+            await nupkgBuilder.PublishNugetPackage();
             ReportProgress(progress, 100, "Publish task skipped");
             cancellationToken.ThrowIfCancellationRequested();
         }

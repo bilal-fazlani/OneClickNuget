@@ -10,7 +10,7 @@ namespace OneClickNuget
 {
     public class NuspecProvider
     {
-        public async Task DownloadLatestNuspec(PackageRetrieveOptions options)
+        public async Task RefreshNuspecFile(PackageRetrieveOptions options)
         {
             await Task.Run(() =>
             {
@@ -37,7 +37,7 @@ namespace OneClickNuget
             });
         }
 
-        public async Task<Manifest> ReadNuspectFile(PackageRetrieveOptions options)
+        public async Task<Manifest> GetNuspecManifest(PackageRetrieveOptions options)
         {
             return await Task.Run(() =>
             {
@@ -55,26 +55,16 @@ namespace OneClickNuget
             });
         }
 
-        private void WriteNuspecFile(Manifest nuspec, PublishOptions options)
-        {
-            try
-            {
-                using (var filestream = new FileStream(options.NuspecFilePath, FileMode.Create))
-                {
-                    nuspec.Save(filestream, true);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Cound not write nuspec file to disk. "+ ex.Message);
-            }
-        }
-
-        public async Task UpdateNuspecFile(PublishOptions options)
+        public async Task PatchNuspecFile(PublishOptions options)
         {
             await Task.Run(async () =>
             {
-                var nuspec = await ReadNuspectFile(options);
+                if (!File.Exists(options.NuspecFilePath))
+                {
+                    await RefreshNuspecFile(options);
+                }
+                
+                var nuspec = await GetNuspecManifest(options);
 
                 if (!string.IsNullOrEmpty(options.ReleaseNotes))
                 {
@@ -90,64 +80,19 @@ namespace OneClickNuget
             });
         }
 
-        public async Task Pack(PublishOptions options)
+        private void WriteNuspecFile(Manifest nuspec, PublishOptions options)
         {
-            await Task.Run(() =>
+            try
             {
-                using (FileStream fileStream = new FileStream(options.NuspecFilePath, FileMode.Open))
+                using (var filestream = new FileStream(options.NuspecFilePath, FileMode.Create))
                 {
-                    var nuspec = Manifest.ReadFrom(fileStream, true);
-                    var pacakgeBuilder = new PackageBuilder();
-                    pacakgeBuilder.Populate(nuspec.Metadata);
-
-                    var manifestFiles = GetManifestFiles(nuspec.Files, options);
-
-                    pacakgeBuilder.PopulateFiles(options.ProjectDirectory, manifestFiles);
-
-                    string nupkgPath = Path.Combine(options.ProjectDirectory, $"{options.ProjectName} {nuspec.Metadata.Version}.nupkg");
-                    FileStream nupkgStream = new FileStream(nupkgPath, FileMode.Create);
-
-                    pacakgeBuilder.Save(nupkgStream);
+                    nuspec.Save(filestream, true);
                 }
-            });
-        }
-
-        private bool ContainsDefaultEnty(IEnumerable<ManifestFile> files, PublishOptions options)
-        {
-            return files.Any(x => x.Target.ToLower() == $"lib\\net45\\{options.ProjectName}.dll".ToLower());
-        }
-
-        private void AddDefaultManifestFileEntry(List<ManifestFile> files, PublishOptions options)
-        {
-            files.Add(new ManifestFile
-            {
-                Source = $"bin\\Release\\{options.ProjectName}.dll",
-                Target = $"lib\\net45\\{options.ProjectName}.dll"
-            });
-        }
-
-        private List<ManifestFile> GetManifestFiles(List<ManifestFile> onlineManifestFileEntries,
-            PublishOptions options)
-        {
-            if (onlineManifestFileEntries == null || !onlineManifestFileEntries.Any())
-            {
-                List<ManifestFile> files = new List<ManifestFile>();
-                AddDefaultManifestFileEntry(files, options);
-                return files;
             }
-
-            if(!ContainsDefaultEnty(onlineManifestFileEntries, options))
+            catch (Exception ex)
             {
-                AddDefaultManifestFileEntry(onlineManifestFileEntries, options);
-                return onlineManifestFileEntries;
+                throw new Exception("Cound not write nuspec file to disk. " + ex.Message);
             }
-
-            return onlineManifestFileEntries;
-        } 
-
-        public async Task Publish()
-        {
-            await Task.Delay(new TimeSpan(0, 0, 3));
         }
     }
 }
