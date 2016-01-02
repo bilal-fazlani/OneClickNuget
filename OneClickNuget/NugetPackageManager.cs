@@ -6,9 +6,6 @@ using NuGet;
 namespace OneClickNuget
 {
     /*
-    todo: pre fill info from local
-    todo: prefill info from server
-    todo: support pre release,
     todo: run unit tests,
     todo: publish
     */

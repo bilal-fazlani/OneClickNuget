@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Logging;
@@ -11,7 +12,11 @@ namespace OneClickNuget
         {
             await Task.Run(() =>
             {
-                var project = new Project(options.ProjectFilePath);
+                var project = 
+                ProjectCollection.GlobalProjectCollection.LoadedProjects.FirstOrDefault(
+                    x=>x.FullPath.ToLower() == options.ProjectFilePath.ToLower()) ?? 
+                new Project(options.ProjectFilePath);
+
                 project.SetProperty("Configuration", "Release");
                 var success = project.Build(new FileLogger());
 
