@@ -76,10 +76,13 @@ namespace OneClickNuget
             {
                 var nuspec = await ReadNuspectFile(options);
 
-                nuspec.Metadata.ReleaseNotes = 
-                $"v {options.TargetPackageVersion}{Environment.NewLine}" +
-                $"{options.ReleaseNotes}{Environment.NewLine}{Environment.NewLine}" +
-                nuspec.Metadata.ReleaseNotes;
+                if (!string.IsNullOrEmpty(options.ReleaseNotes))
+                {
+                    nuspec.Metadata.ReleaseNotes =
+                        $"v {options.TargetPackageVersion}{Environment.NewLine}" +
+                        $"{options.ReleaseNotes}{Environment.NewLine}{Environment.NewLine}" +
+                        nuspec.Metadata.ReleaseNotes;
+                }
 
                 nuspec.Metadata.Version = options.TargetPackageVersion.ToNormalizedString();
 

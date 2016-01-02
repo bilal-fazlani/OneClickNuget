@@ -1,4 +1,5 @@
-﻿using NuGet;
+﻿using System;
+using NuGet;
 
 namespace OneClickNuget
 {
@@ -9,7 +10,18 @@ namespace OneClickNuget
             string targetPackageVersion, 
             string releaseNotes):base(projectFilePath)
         {
-            TargetPackageVersion = SemanticVersion.Parse(targetPackageVersion);
+            if (string.IsNullOrEmpty(targetPackageVersion))
+                throw new Exception("Please specify a version for nuget package.");
+
+            try
+            {
+                TargetPackageVersion = SemanticVersion.Parse(targetPackageVersion);
+            }
+            catch (Exception)
+            {
+                throw new Exception($"{targetPackageVersion} is not a valid version.");
+            }
+            
             ReleaseNotes = releaseNotes;
         }
 

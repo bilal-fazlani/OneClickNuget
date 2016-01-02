@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace OneClickNuget
 {
@@ -6,6 +7,8 @@ namespace OneClickNuget
     {
         public PackageRetrieveOptions(string projectFilePath)
         {
+            if(string.IsNullOrEmpty(projectFilePath))
+                throw new Exception("Please specify a project file.");
             ProjectFilePath = projectFilePath;
         }
 

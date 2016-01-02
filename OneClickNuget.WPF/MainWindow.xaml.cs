@@ -60,10 +60,23 @@ namespace OneClickNuget.WPF
                 _filePath = _openFileDialog.FileName;
                 PackageRetrieveOptions options = new PackageRetrieveOptions(_filePath);
                 _manifest = await _publisher.GetPackageInformation(options);
-                TextBlockProjectTitle.Text = _manifest.Metadata.Id;
-                VersionTextBox.Text = _manifest.Metadata.Version;
+                TextBlockProjectTitle.Text = $"{_manifest.Metadata.Id} {_manifest.Metadata.Version}";
+                VersionTextBox.Text = GetNewVersion();
                 ShowStatus("Package Information loaded");
             }
+        }
+
+        private string GetNewVersion()
+        {
+            var existingVersion = SemanticVersion.Parse(_manifest.Metadata.Version);
+
+            var newVersion = new SemanticVersion(
+                existingVersion.Version.Major,
+                existingVersion.Version.Minor, 
+                existingVersion.Version.Build + 1, 
+                existingVersion.SpecialVersion);
+
+            return newVersion.ToNormalizedString();
         }
 
         private async void PublishButton_Click(object sender, RoutedEventArgs e)
