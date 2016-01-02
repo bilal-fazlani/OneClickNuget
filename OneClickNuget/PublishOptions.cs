@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using NuGet;
 
 namespace OneClickNuget
 {
@@ -14,11 +9,11 @@ namespace OneClickNuget
             string targetPackageVersion, 
             string releaseNotes):base(projectFilePath)
         {
-            TargetPackageVersion = targetPackageVersion;
+            TargetPackageVersion = SemanticVersion.Parse(targetPackageVersion);
             ReleaseNotes = releaseNotes;
         }
 
-        public string TargetPackageVersion { get; set; }
+        public SemanticVersion TargetPackageVersion { get; set; }
 
         public string ReleaseNotes { get; set; }
     }

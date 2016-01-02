@@ -8,7 +8,7 @@
         Title="MainWindow" Height="440.773" Width="525"
         ResizeMode="NoResize">
     <Grid >
-        <Button x:Name="BrowseButton" Content="Browse project" HorizontalAlignment="Left" Margin="40,32,0,0" VerticalAlignment="Top" Width="103" Click="button_Click"/>
+        <Button x:Name="BrowseButton" Content="Browse project" HorizontalAlignment="Left" Margin="40,32,0,0" VerticalAlignment="Top" Width="103" Click="BrowseButton_Click"/>
         <TextBlock x:Name="TextBlockProjectTitle" HorizontalAlignment="Left" Margin="166,32,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="20" Width="321"><Run /><LineBreak/><Run/></TextBlock>
 
         <TextBlock x:Name="VersionLabel" HorizontalAlignment="Left" Margin="40,70,0,0" TextWrapping="Wrap" Text="version" VerticalAlignment="Top"/>

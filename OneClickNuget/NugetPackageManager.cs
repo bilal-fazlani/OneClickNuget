@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet;
@@ -40,11 +39,11 @@ namespace OneClickNuget
             await PublishPackage(options, progress, cancellationToken);
         }
 
-        public async Task<ManifestMetadata> GetPackageInformation(PackageRetrieveOptions options)
+        public async Task<Manifest> GetPackageInformation(PackageRetrieveOptions options)
         {
             var nuspecProvider = new NuspecProvider();
-            var manifest = await nuspecProvider.ReadNuspectFile(options);
-            return manifest.Metadata;
+            await nuspecProvider.DownloadLatestNuspec(options);
+            return await nuspecProvider.ReadNuspectFile(options);
         }
 
         private async Task PrepareBinaries(PublishOptions options,

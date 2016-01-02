@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace OneClickNuget
 {
@@ -21,5 +16,7 @@ namespace OneClickNuget
         public string ProjectDirectory => Path.GetDirectoryName(ProjectFilePath);
 
         public string NuspecFilePath => Path.Combine(ProjectDirectory, ProjectName + ".nuspec");
+
+        public string NugetUrl => $@"http://nuget.org/api/v2/package/{ProjectName}";
     }
 }

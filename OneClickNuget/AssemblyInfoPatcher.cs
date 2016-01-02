@@ -31,8 +31,8 @@ namespace OneClickNuget
                     index++;
                 }
 
-                allLines[assemblyVersionIndex] = $"[assembly: AssemblyVersion(\"{options.TargetPackageVersion}\")]";
-                allLines[assemblyFileVersionIndex] = $"[assembly: AssemblyFileVersion(\"{options.TargetPackageVersion}\")]";
+                allLines[assemblyVersionIndex] = $"[assembly: AssemblyVersion(\"{options.TargetPackageVersion.Version}\")]";
+                allLines[assemblyFileVersionIndex] = $"[assembly: AssemblyFileVersion(\"{options.TargetPackageVersion.Version}\")]";
 
                 File.WriteAllLines(assemblyInfoFileName, allLines);
             });

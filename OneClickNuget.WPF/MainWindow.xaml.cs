@@ -38,7 +38,7 @@ namespace OneClickNuget.WPF
         private CancellationTokenSource _cancellationTokenSource = null;
         readonly NugetPackageManager _publisher = new NugetPackageManager();
         private string _filePath = null;
-        private ManifestMetadata _metadata = null;
+        private Manifest _manifest = null;
 
         public MainWindow()
         {
@@ -46,7 +46,7 @@ namespace OneClickNuget.WPF
             _openFileDialog.FileOk += OpenFileDialogOnFileOk;
         }
 
-        private void button_Click(object sender, RoutedEventArgs e)
+        private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
             _openFileDialog.ShowDialog();
         }
@@ -54,11 +54,16 @@ namespace OneClickNuget.WPF
         private async void OpenFileDialogOnFileOk(object sender, 
             CancelEventArgs cancelEventArgs)
         {
-            _filePath = _openFileDialog.FileName;
-            PackageRetrieveOptions options = new PackageRetrieveOptions(_filePath);
-            _metadata = await _publisher.GetPackageInformation(options);
-            TextBlockProjectTitle.Text = _metadata.Id;
-            VersionTextBox.Text = _metadata.Version;
+            using (new WaitCursor())
+            {
+                ShowStatus("Please wait.... downloading package information");
+                _filePath = _openFileDialog.FileName;
+                PackageRetrieveOptions options = new PackageRetrieveOptions(_filePath);
+                _manifest = await _publisher.GetPackageInformation(options);
+                TextBlockProjectTitle.Text = _manifest.Metadata.Id;
+                VersionTextBox.Text = _manifest.Metadata.Version;
+                ShowStatus("Package Information loaded");
+            }
         }
 
         private async void PublishButton_Click(object sender, RoutedEventArgs e)
@@ -83,6 +88,11 @@ namespace OneClickNuget.WPF
         private void ShowStatus(PublishProgress progress)
         {
             StatusTextBox.Text = $"{progress.Percent}% : {progress.Message}";
+        }
+
+        private void ShowStatus(string status)
+        {
+            StatusTextBox.Text = status;
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
