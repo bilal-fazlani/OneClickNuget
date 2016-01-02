@@ -1,7 +1,7 @@
 ﻿using System;
 using NuGet;
 
-namespace OneClickNuget
+namespace OneClickNuget.Data
 {
     public class PublishOptions : PackageRetrieveOptions
     {

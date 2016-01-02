@@ -1,6 +1,6 @@
 ﻿namespace OneClickNuget
 {
-    public struct PublishProgress
+    public struct PackageProgress
     {
         public int Percent { get; set; }
         public string Message { get; set; }

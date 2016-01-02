@@ -4,10 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet;
+using OneClickNuget.Data;
 
 namespace OneClickNuget
 {
-    public class NupkgBuilder
+    public class PackageMaker
     {
         public async Task CreateNugetPackage(PublishOptions options)
         {

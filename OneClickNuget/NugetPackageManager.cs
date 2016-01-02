@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet;
+using OneClickNuget.Data;
 
 namespace OneClickNuget
 {
@@ -11,10 +12,10 @@ namespace OneClickNuget
     */
     public class NugetPackageManager
     {
-        private static void ReportProgress(IProgress<PublishProgress> progress, 
+        private static void ReportProgress(IProgress<PackageProgress> progress, 
             int percent, string message)
         {
-            progress.Report(new PublishProgress
+            progress.Report(new PackageProgress
             {
                 Message = message,
                 Percent = percent
@@ -23,7 +24,7 @@ namespace OneClickNuget
 
         public async Task Publish(
             PublishOptions options,
-            IProgress<PublishProgress> progress,
+            IProgress<PackageProgress> progress,
             CancellationToken cancellationToken
             )
         {
@@ -38,13 +39,13 @@ namespace OneClickNuget
 
         public async Task<Manifest> GetPackageInformation(PackageRetrieveOptions options)
         {
-            var nuspecProvider = new NuspecProvider();
+            var nuspecProvider = new NuspecManager();
             await nuspecProvider.RefreshNuspecFile(options);
             return await nuspecProvider.GetNuspecManifest(options);
         }
 
         private async Task PrepareBinaries(PublishOptions options,
-            IProgress<PublishProgress> progress, 
+            IProgress<PackageProgress> progress, 
             CancellationToken cancellationToken)
         {
             AssemblyInfoPatcher assemblyInfoPatcher = new AssemblyInfoPatcher();
@@ -52,32 +53,32 @@ namespace OneClickNuget
             ReportProgress(progress, 20, "AssemblyInfo patched");
             cancellationToken.ThrowIfCancellationRequested();
 
-            BuildProvider buildProvider = new BuildProvider();
-            await buildProvider.Build(options);
+            ProjectBuilder projectBuilder = new ProjectBuilder();
+            await projectBuilder.Build(options);
             ReportProgress(progress, 50, "Build complete");
             cancellationToken.ThrowIfCancellationRequested();
 
-            await buildProvider.RunUnitTests();
+            await projectBuilder.RunUnitTests();
             ReportProgress(progress, 70, "Unit tests skipped");
             cancellationToken.ThrowIfCancellationRequested();
         }
 
         private async Task PublishPackage(
             PublishOptions options,
-            IProgress<PublishProgress> progress,
+            IProgress<PackageProgress> progress,
             CancellationToken cancellationToken)
         {
-            NuspecProvider nuspecProvider = new NuspecProvider();
-            await nuspecProvider.PatchNuspecFile(options);
+            NuspecManager nuspecManager = new NuspecManager();
+            await nuspecManager.PatchNuspecFile(options);
             ReportProgress(progress, 10, "Nuspec updated");
             cancellationToken.ThrowIfCancellationRequested();
 
-            NupkgBuilder nupkgBuilder = new NupkgBuilder();
-            await nupkgBuilder.CreateNugetPackage(options);
+            PackageMaker packageMaker = new PackageMaker();
+            await packageMaker.CreateNugetPackage(options);
             ReportProgress(progress, 90, "Nuget package created");
             cancellationToken.ThrowIfCancellationRequested();
 
-            await nupkgBuilder.PublishNugetPackage();
+            await packageMaker.PublishNugetPackage();
             ReportProgress(progress, 100, "Publish task skipped");
             cancellationToken.ThrowIfCancellationRequested();
         }

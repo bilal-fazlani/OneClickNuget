@@ -5,10 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using NuGet;
 using NuGet.Packaging;
+using OneClickNuget.Data;
 
 namespace OneClickNuget
 {
-    public class NuspecProvider
+    public class NuspecManager
     {
         public async Task RefreshNuspecFile(PackageRetrieveOptions options)
         {

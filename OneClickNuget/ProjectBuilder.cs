@@ -3,10 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Logging;
+using OneClickNuget.Data;
 
 namespace OneClickNuget
 {
-    public class BuildProvider
+    public class ProjectBuilder
     {
         public async Task Build(PublishOptions options)
         {

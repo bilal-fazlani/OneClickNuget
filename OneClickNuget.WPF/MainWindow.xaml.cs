@@ -17,6 +17,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Win32;
 using NuGet;
+using OneClickNuget.Data;
 
 namespace OneClickNuget.WPF
 {
@@ -81,7 +82,7 @@ namespace OneClickNuget.WPF
 
         private async void PublishButton_Click(object sender, RoutedEventArgs e)
         {
-            Progress<PublishProgress> progress = new Progress<PublishProgress>(ShowStatus);
+            Progress<PackageProgress> progress = new Progress<PackageProgress>(ShowStatus);
             _cancellationTokenSource = new CancellationTokenSource();
 
             try
@@ -98,7 +99,7 @@ namespace OneClickNuget.WPF
             }
         }
 
-        private void ShowStatus(PublishProgress progress)
+        private void ShowStatus(PackageProgress progress)
         {
             StatusTextBox.Text = $"{progress.Percent}% : {progress.Message}";
         }

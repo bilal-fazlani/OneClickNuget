@@ -105,14 +105,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfoPatcher.cs" />
-    <Compile Include="BuildProvider.cs" />
+    <Compile Include="ProjectBuilder.cs" />
     <Compile Include="NugetPackageManager.cs" />
-    <Compile Include="NuspecProvider.cs" />
-    <Compile Include="NupkgBuilder.cs" />
-    <Compile Include="PackageRetrieveOptions.cs" />
+    <Compile Include="NuspecManager.cs" />
+    <Compile Include="PackageMaker.cs" />
+    <Compile Include="Data\PackageRetrieveOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PublishOptions.cs" />
-    <Compile Include="PublishProgress.cs" />
+    <Compile Include="Data\PublishOptions.cs" />
+    <Compile Include="PackageProgress.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
