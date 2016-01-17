@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,29 +12,32 @@ namespace OneClickNuget
     {
         public async Task RefreshNuspecFile(PackageRetrieveOptions options)
         {
-            await Task.Run(() =>
+            if (!File.Exists(options.NuspecFilePath) || options.AlwaysLoadFromInternet)
             {
-                try
+                await Task.Run(() =>
                 {
-                    IPackageRepository repo =
-                        PackageRepositoryFactory.Default.CreateRepository("https://packages.nuget.org/api/v2");
-                    var package = repo.FindPackage(options.ProjectName);
-
-                    using (var pkgStream = package.GetStream())
+                    try
                     {
-                        var pkgReader = new PackageReader(pkgStream);
-                        using (Stream nuspecStream = pkgReader.GetNuspec())
-                        using (var fileStream = new FileStream(options.NuspecFilePath, FileMode.Create))
+                        IPackageRepository repo =
+                            PackageRepositoryFactory.Default.CreateRepository("https://packages.nuget.org/api/v2");
+                        var package = repo.FindPackage(options.ProjectName);
+
+                        using (var pkgStream = package.GetStream())
                         {
-                            nuspecStream.CopyTo(fileStream);
+                            var pkgReader = new PackageReader(pkgStream);
+                            using (Stream nuspecStream = pkgReader.GetNuspec())
+                            using (var fileStream = new FileStream(options.NuspecFilePath, FileMode.Create))
+                            {
+                                nuspecStream.CopyTo(fileStream);
+                            }
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("Unable to download read from internet. " + ex.Message);
-                }
-            });
+                    catch (Exception ex)
+                    {
+                        throw new Exception("Unable to download read from internet. " + ex.Message);
+                    }
+                });
+            }
         }
 
         public async Task<Manifest> GetNuspecManifest(PackageRetrieveOptions options)
@@ -64,7 +66,7 @@ namespace OneClickNuget
                 {
                     await RefreshNuspecFile(options);
                 }
-                
+
                 var nuspec = await GetNuspecManifest(options);
 
                 if (!string.IsNullOrEmpty(options.ReleaseNotes))
@@ -77,6 +79,9 @@ namespace OneClickNuget
 
                 nuspec.Metadata.Version = options.TargetPackageVersion.ToNormalizedString();
 
+                //todo:fix this [FIRST()]
+                nuspec.Metadata.DependencySets.First().Dependencies = options.Dependencies;
+               
                 WriteNuspecFile(nuspec, options);
             });
         }

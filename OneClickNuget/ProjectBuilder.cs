@@ -30,7 +30,7 @@ namespace OneClickNuget
 
         public async Task RunUnitTests()
         {
-            await Task.Delay(new TimeSpan(0, 0, 3));
+            await Task.Delay(new TimeSpan(0, 0, 1));
         }
     }
 }

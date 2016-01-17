@@ -8,7 +8,8 @@ namespace OneClickNuget
 {
     /*
     todo: run unit tests,
-    todo: publish
+    todo: show dependency update options
+    todo: use msbuild package
     */
     public class NugetPackageManager
     {
@@ -79,7 +80,7 @@ namespace OneClickNuget
             cancellationToken.ThrowIfCancellationRequested();
 
             await packageMaker.PublishNugetPackage(options);
-            ReportProgress(progress, 100, "Publish task skipped");
+            ReportProgress(progress, 100, "Publish task completed!");
             cancellationToken.ThrowIfCancellationRequested();
         }
     }

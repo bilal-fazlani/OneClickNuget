@@ -64,6 +64,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="StateManager.cs" />
+    <Compile Include="DependencyModel.cs" />
+    <Compile Include="ModelState.cs" />
     <Compile Include="WaitCursor.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

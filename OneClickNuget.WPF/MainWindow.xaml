@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OneClickNuget.WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="440.773" Width="525"
+        Title="MainWindow" Height="440.773" Width="939"
         ResizeMode="NoResize">
     <Grid >
         <Button x:Name="BrowseButton" Content="Browse project" HorizontalAlignment="Left" Margin="40,32,0,0" VerticalAlignment="Top" Width="103" Click="BrowseButton_Click"/>
@@ -28,6 +28,13 @@
                    Background="#e4e4e4"
                    VerticalAlignment="Center" 
                    Padding="16,8"
-                   Width="519" Height="34"/>
+                   Width="933" Height="34"/>
+        <DataGrid x:Name="dataGrid" HorizontalAlignment="Left" Margin="515,91,0,0" 
+                  VerticalAlignment="Top" Height="274" Width="386" 
+                  AutoGeneratingColumn="DataGrid_OnAutoGeneratingColumn"
+                  >
+        </DataGrid>
+        <TextBlock HorizontalAlignment="Left" Margin="515,70,0,0" TextWrapping="Wrap" Text="dependencies" VerticalAlignment="Top"/>
+        <CheckBox x:Name="AlwaysLoadFromInternetCheckBox" Content="Always load from internet" HorizontalAlignment="Right" Margin="0,35,27,0" VerticalAlignment="Top" RenderTransformOrigin="-1.479,0.867"/>
     </Grid>
 </Window>

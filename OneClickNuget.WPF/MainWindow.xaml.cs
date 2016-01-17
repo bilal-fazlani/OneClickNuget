@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -37,7 +38,7 @@ namespace OneClickNuget.WPF
         };
 
         private CancellationTokenSource _cancellationTokenSource = null;
-        readonly NugetPackageManager _publisher = new NugetPackageManager();
+        readonly NugetPackageManager _nugetPackageManager = new NugetPackageManager();
         private string _filePath = null;
         private Manifest _manifest = null;
 
@@ -45,6 +46,15 @@ namespace OneClickNuget.WPF
         {
             InitializeComponent();
             _openFileDialog.FileOk += OpenFileDialogOnFileOk;
+
+            RestoreState();
+        }
+
+        private void RestoreState()
+        {
+            ApiKeyTextBox.Text = StateManager.Get().ApiKey;
+            ReleaseNotesTextBox.Text = StateManager.Get().LastReleaseNotes;
+            AlwaysLoadFromInternetCheckBox.IsChecked = StateManager.Get().AlwaysLoadFromInternet;
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -60,11 +70,22 @@ namespace OneClickNuget.WPF
                 try
                 {
                     ShowStatus("Please wait.... downloading package information");
+
                     _filePath = _openFileDialog.FileName;
-                    PackageRetrieveOptions options = new PackageRetrieveOptions(_filePath);
-                    _manifest = await _publisher.GetPackageInformation(options);
+                    PackageRetrieveOptions options = new PackageRetrieveOptions(_filePath, AlwaysLoadFromInternetCheckBox.IsChecked.GetValueOrDefault(false));
+                    _manifest = await _nugetPackageManager.GetPackageInformation(options);
                     TextBlockProjectTitle.Text = $"{_manifest.Metadata.Id} {_manifest.Metadata.Version}";
                     VersionTextBox.Text = GetNewVersion();
+
+                    dataGrid.ItemsSource = _manifest.Metadata
+                        .DependencySets.First()
+                        .Dependencies.Select(d=> new DependencyModel
+                        {
+                            Id = d.Id,
+                            Version = d.Version
+                        })
+                        .ToList();
+
                     ShowStatus("Package information loaded");
                 }
                 catch (Exception ex)
@@ -89,18 +110,26 @@ namespace OneClickNuget.WPF
 
         private async void PublishButton_Click(object sender, RoutedEventArgs e)
         {
+            SaveState();
+
             Progress<PackageProgress> progress = new Progress<PackageProgress>(ShowStatus);
             _cancellationTokenSource = new CancellationTokenSource();
 
             try
             {
+                var dependencies = ((IEnumerable<DependencyModel>) dataGrid.ItemsSource)
+                    .Select(x => new ManifestDependency {Id = x.Id, Version = x.Version})
+                    .ToList();
+
                 var publishOptions = new PublishOptions(
                     _filePath, 
                     VersionTextBox.Text, 
                     ReleaseNotesTextBox.Text, 
-                    ApiKeyTextBox.Text);
+                    ApiKeyTextBox.Text,
+                    dependencies,
+                    AlwaysLoadFromInternetCheckBox.IsChecked.GetValueOrDefault(false));
 
-                await _publisher.Publish(publishOptions, progress, _cancellationTokenSource.Token);
+                await _nugetPackageManager.Publish(publishOptions, progress, _cancellationTokenSource.Token);
             }
             catch (Exception ex)
             {
@@ -109,6 +138,16 @@ namespace OneClickNuget.WPF
 
                 StatusTextBox.Text = $"publish failed : {ex.Message}";
             }
+        }
+
+        private void SaveState()
+        {
+            StateManager.Save(new ModelState
+            {
+                AlwaysLoadFromInternet = AlwaysLoadFromInternetCheckBox.IsChecked ?? false,
+                ApiKey = ApiKeyTextBox.Text,
+                LastReleaseNotes = ReleaseNotesTextBox.Text
+            });
         }
 
         private void ShowStatus(PackageProgress progress)
@@ -123,7 +162,15 @@ namespace OneClickNuget.WPF
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            _cancellationTokenSource.Cancel(true);
+            _cancellationTokenSource?.Cancel(true);
+        }
+
+        private void DataGrid_OnAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
+        {
+            if (e.PropertyName == nameof(DependencyModel.Id))
+            {
+                e.Column.IsReadOnly = true;
+            }
         }
     }
 }

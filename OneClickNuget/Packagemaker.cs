@@ -25,9 +25,11 @@ namespace OneClickNuget
                     pacakgeBuilder.PopulateFiles(options.ProjectDirectory, manifestFiles);
 
                     string nupkgPath = Path.Combine(options.ProjectDirectory, $"{options.ProjectName} {nuspec.Metadata.Version}.nupkg");
-                    FileStream nupkgStream = new FileStream(nupkgPath, FileMode.Create);
 
-                    pacakgeBuilder.Save(nupkgStream);
+                    using (FileStream nupkgStream = new FileStream(nupkgPath, FileMode.Create))
+                    {
+                        pacakgeBuilder.Save(nupkgStream);
+                    }
                 }
             });
         }
@@ -38,24 +40,35 @@ namespace OneClickNuget
             {
                 await Task.Run(() =>
                 {
-                    IPackageRepository localRepo = PackageRepositoryFactory
-                        .Default.CreateRepository(options.ProjectDirectory);
-
-                    IPackage localPackage = localRepo.FindPackage(options.ProjectName, options.TargetPackageVersion);
+                    IPackage localPackage = GetLocalPackage(options);
 
                     FileInfo packageFileInfo = new FileInfo(options.PackagePath);
 
-                    PackageServer packageServer = new PackageServer("https://packages.nuget.org/api/v2",
+                    PackageServer packageServer = new PackageServer("https://www.nuget.org/api/v2/package",
                         "OneClickNuget");
 
-                    //packageServer.PushPackage(options.ApiKey, localPackage,
-                    //    packageFileInfo.Length, 1800, false);
+                    packageServer.PushPackage(options.ApiKey, localPackage,
+                        packageFileInfo.Length, 180000, false);
                 });
             }
             catch (Exception ex)
             {
                 throw new Exception("Could not publish package. "+ ex.Message);
             }
+        }
+
+        private static IPackage GetLocalPackage(PublishOptions options)
+        {
+            IPackageRepository localRepo = PackageRepositoryFactory.Default
+                .CreateRepository(options.ProjectDirectory);
+
+            IPackage localPackage = localRepo
+                .FindPackagesById(options.ProjectName)
+                .SingleOrDefault(x => x.Version == options.TargetPackageVersion);
+
+            if (localPackage == null) throw new Exception($"could not find nuget package of version {options.TargetPackageVersion} on local disk");
+
+            return localPackage;
         }
 
         private List<ManifestFile> GetManifestFiles(List<ManifestFile> onlineManifestFileEntries,
