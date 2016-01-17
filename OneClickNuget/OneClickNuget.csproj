@@ -129,6 +129,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfoPatcher.cs" />
+    <Compile Include="ProgressResultType.cs" />
     <Compile Include="ProjectBuilder.cs" />
     <Compile Include="NugetPackageManager.cs" />
     <Compile Include="NuspecManager.cs" />

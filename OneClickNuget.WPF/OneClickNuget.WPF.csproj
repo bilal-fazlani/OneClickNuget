@@ -64,6 +64,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ContinuousProgressBarCommand.cs" />
     <Compile Include="StateManager.cs" />
     <Compile Include="DependencyModel.cs" />
     <Compile Include="ModelState.cs" />

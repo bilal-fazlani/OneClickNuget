@@ -45,6 +45,11 @@ namespace OneClickNuget.WPF
         public MainWindow()
         {
             InitializeComponent();
+
+            StatusProgressBar.Orientation = Orientation.Horizontal;
+            StatusProgressBar.Minimum = 0;
+            StatusProgressBar.Maximum = 100;
+
             _openFileDialog.FileOk += OpenFileDialogOnFileOk;
 
             RestoreState();
@@ -69,7 +74,8 @@ namespace OneClickNuget.WPF
             {
                 try
                 {
-                    ShowStatus("Please wait.... downloading package information");
+                    ShowStatus("Please wait.... downloading package information"
+                        , ContinuousProgressBarCommand.Start, ProgressResultType.Info);
 
                     _filePath = _openFileDialog.FileName;
                     PackageRetrieveOptions options = new PackageRetrieveOptions(_filePath, AlwaysLoadFromInternetCheckBox.IsChecked.GetValueOrDefault(false));
@@ -86,11 +92,12 @@ namespace OneClickNuget.WPF
                         })
                         .ToList();
 
-                    ShowStatus("Package information loaded");
+                    ShowStatus("Package information loaded", ContinuousProgressBarCommand.End, ProgressResultType.Info);
                 }
                 catch (Exception ex)
                 {
-                    ShowStatus("Could not load package information." + ex.Message);
+                    ShowStatus("Could not load package information." + ex.Message,
+                        ContinuousProgressBarCommand.End, ProgressResultType.Failure);
                 }
             }
         }
@@ -133,10 +140,11 @@ namespace OneClickNuget.WPF
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Publish failed", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-
-                StatusTextBox.Text = $"publish failed : {ex.Message}";
+                ShowStatus(new PackageProgress
+                {
+                    ProgressResultType = ProgressResultType.Failure,
+                    Message = $"publish failed : {ex.Message}",
+                });
             }
         }
 
@@ -152,11 +160,31 @@ namespace OneClickNuget.WPF
 
         private void ShowStatus(PackageProgress progress)
         {
+            StatusProgressBar.IsIndeterminate = false;
+
+            StatusProgressBar.Foreground = progress.ProgressResultType == ProgressResultType.Failure ? 
+                new SolidColorBrush(Colors.Red) : new SolidColorBrush(Colors.Green);
+
+            if (progress.ProgressResultType != ProgressResultType.Failure)
+            {
+                StatusProgressBar.Value = progress.Percent;
+            }
+
             StatusTextBox.Text = $"{progress.Percent}% : {progress.Message}";
+
         }
 
-        private void ShowStatus(string status)
+        private void ShowStatus(string status, 
+            ContinuousProgressBarCommand progressBarCommand,
+            ProgressResultType progressResultType)
         {
+            StatusProgressBar.Value = progressResultType == ProgressResultType.Failure ? 100 : 0;
+
+            StatusProgressBar.Foreground = progressResultType == ProgressResultType.Failure ?
+                new SolidColorBrush(Colors.Red) : new SolidColorBrush(Colors.Green);
+
+            StatusProgressBar.IsIndeterminate = progressBarCommand == ContinuousProgressBarCommand.Start;
+
             StatusTextBox.Text = status;
         }
 
