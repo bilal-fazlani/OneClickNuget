@@ -21,6 +21,8 @@ namespace OneClickNuget.Data
 
         public string NuspecFilePath => Path.Combine(ProjectDirectory, ProjectName + ".nuspec");
 
+        public string PackageConfigPath => Path.Combine(ProjectDirectory, "Packages.config");
+
         public string NugetUrl => $@"http://nuget.org/api/v2/package/{ProjectName}";
 
         public bool AlwaysLoadFromInternet { get; set; }

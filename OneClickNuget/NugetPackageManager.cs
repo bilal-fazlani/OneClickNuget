@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet;
@@ -31,8 +33,6 @@ namespace OneClickNuget
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            ReportProgress(progress, 0, "Starting up...");
-
             await PrepareBinaries(options, progress, cancellationToken);
 
             await PublishPackage(options, progress, cancellationToken);
@@ -45,22 +45,37 @@ namespace OneClickNuget
             return await nuspecProvider.GetNuspecManifest(options);
         }
 
+        public List<ManifestDependency> GetProjectDependencies(PackageRetrieveOptions options)
+        {
+            var configReader = new PackagesConfigReader(options);
+            var dependenties = configReader.Read().Select(d => new ManifestDependency
+            {
+                Id = d.PackageIdentity.Id,
+                Version = d.PackageIdentity.Version.ToString()
+            }).ToList();
+
+            return dependenties;
+        } 
+
         private async Task PrepareBinaries(PublishOptions options,
             IProgress<PackageProgress> progress, 
             CancellationToken cancellationToken)
         {
+            ReportProgress(progress, 0, "Patching AssemblyInfo");
+
             AssemblyInfoPatcher assemblyInfoPatcher = new AssemblyInfoPatcher();
             await assemblyInfoPatcher.PatchVersion(options);
-            ReportProgress(progress, 20, "AssemblyInfo patched");
             cancellationToken.ThrowIfCancellationRequested();
+            
+            ReportProgress(progress, 10, "Building project");
 
             ProjectBuilder projectBuilder = new ProjectBuilder();
             await projectBuilder.Build(options);
-            ReportProgress(progress, 50, "Build complete");
             cancellationToken.ThrowIfCancellationRequested();
 
+            ReportProgress(progress, 30, "Skipping unit tests");
+
             await projectBuilder.RunUnitTests();
-            ReportProgress(progress, 70, "Unit tests skipped");
             cancellationToken.ThrowIfCancellationRequested();
         }
 
@@ -69,19 +84,24 @@ namespace OneClickNuget
             IProgress<PackageProgress> progress,
             CancellationToken cancellationToken)
         {
+            ReportProgress(progress, 40, "Updating nuspec file");
+
             NuspecManager nuspecManager = new NuspecManager();
             await nuspecManager.PatchNuspecFile(options);
-            ReportProgress(progress, 10, "Nuspec updated");
             cancellationToken.ThrowIfCancellationRequested();
+
+            ReportProgress(progress, 60, "Creating nuget package");
 
             PackageMaker packageMaker = new PackageMaker();
             await packageMaker.CreateNugetPackage(options);
-            ReportProgress(progress, 90, "Nuget package created");
             cancellationToken.ThrowIfCancellationRequested();
 
+            ReportProgress(progress, 80, "Publishing package");
+
             await packageMaker.PublishNugetPackage(options);
-            ReportProgress(progress, 100, "Publish task completed!");
             cancellationToken.ThrowIfCancellationRequested();
+
+            ReportProgress(progress, 100, "Package published!");
         }
     }
 }

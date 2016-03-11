@@ -83,14 +83,7 @@ namespace OneClickNuget.WPF
                     TextBlockProjectTitle.Text = $"{_manifest.Metadata.Id} {_manifest.Metadata.Version}";
                     VersionTextBox.Text = GetNewVersion();
 
-                    dataGrid.ItemsSource = _manifest.Metadata
-                        .DependencySets.First()
-                        .Dependencies.Select(d=> new DependencyModel
-                        {
-                            Id = d.Id,
-                            Version = d.Version
-                        })
-                        .ToList();
+                    dataGrid.ItemsSource = GetDependecies(options);
 
                     ShowStatus("Package information loaded", ContinuousProgressBarCommand.End, ProgressResultType.Info);
                 }
@@ -100,6 +93,40 @@ namespace OneClickNuget.WPF
                         ContinuousProgressBarCommand.End, ProgressResultType.Failure);
                 }
             }
+        }
+
+        private IEnumerable<DependencyModel> GetDependecies(PackageRetrieveOptions options)
+        {
+            //todo:fix dependencyset issue.
+            var nuspecDependencies = _manifest.Metadata
+                        .DependencySets.First()
+                        .Dependencies.Select(d => new DependencyModel
+                        {
+                            Id = d.Id,
+                            Version = d.Version
+                        }).ToList();
+
+            var projetDependencies = _nugetPackageManager.GetProjectDependencies(options)
+                .Select(d => new DependencyModel
+                {
+                    Id = d.Id,
+                    Version = d.Version
+                }).ToList();
+
+
+            var finalDependencies = new List<DependencyModel>();
+
+            finalDependencies.AddRange(projetDependencies);
+
+            foreach (var nuspecDependency in nuspecDependencies)
+            {
+                if (!finalDependencies.Contains(nuspecDependency, new DependencyModelIdComparator()))
+                {
+                    finalDependencies.Add(nuspecDependency);
+                }
+            }
+
+            return finalDependencies;
         }
 
         private string GetNewVersion()
